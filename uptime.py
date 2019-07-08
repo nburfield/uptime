@@ -49,7 +49,6 @@ def validate():
         email_error(email_message, already_sent)
 
 def email_error(message, mark_sent):
-    print("EMAIL")
     try:
         requests.post("https://api.mailgun.net/v3/mg.bcinnovationsonline.com/messages",
                       auth=("api", envs['MAILGUN_KEY']),
