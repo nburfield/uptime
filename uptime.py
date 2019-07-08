@@ -30,20 +30,23 @@ def validate():
             already_sent = {}
 
         for p in data:
-            with urllib.request.urlopen(p) as response:
-                html = response.read()
-                encoded = base64.b64encode(html)
-                hashed = mmh3.hash128(encoded, 42, signed = True)
+            try:
+                with urllib.request.urlopen(p) as response:
+                    html = response.read()
+                    encoded = base64.b64encode(html)
+                    hashed = mmh3.hash128(encoded, 42, signed = True)
 
-                mark = True
-                if p in already_sent:
-                    if already_sent[p]:
-                        mark = False
+                    mark = True
+                    if p in already_sent:
+                        if already_sent[p]:
+                            mark = False
 
-                if mark:
-                    if data[p] != hashed:
-                        email_message += "- Failed Hash for: " + str(p) + '\r\n'
-                        already_sent[p] = True
+                    if mark:
+                        if data[p] != hashed:
+                            email_message += "- Failed Hash for: " + str(p) + '\r\n'
+                            already_sent[p] = True
+            except:
+                email_message += "- Failed EXCEPTION for: " + str(p) + '\r\n'
 
     if email_message != '':
         email_error(email_message, already_sent)
