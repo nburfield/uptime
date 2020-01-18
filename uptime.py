@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import urllib.request
 import base64
 import mmh3
@@ -6,7 +8,7 @@ import requests
 import os
 
 # get the env variables defined in the env file
-envfile = open(".envs")
+envfile = open("/home/nburfield/Development/uptime/.envs")
 envs = {}
 for line in envfile:
   linesplit = line.split(':')
@@ -19,12 +21,12 @@ for line in envfile:
 def validate():
     email_message = ''
     already_sent = None
-    if os.path.exists('processed.json'):
-        sent_json_file = open('processed.json')
+    if os.path.exists('/home/nburfield/Development/uptime/processed.json'):
+        sent_json_file = open('/home/nburfield/Development/uptime/processed.json')
         already_sent = json.load(sent_json_file)
         sent_json_file.close()
 
-    with open('saved.json') as json_file:
+    with open('/home/nburfield/Development/uptime/saved.json') as json_file:
         data = json.load(json_file)
         if not already_sent:
             already_sent = {}
@@ -46,7 +48,13 @@ def validate():
                             email_message += "- Failed Hash for: " + str(p) + '\r\n'
                             already_sent[p] = True
             except:
-                email_message += "- Failed EXCEPTION for: " + str(p) + '\r\n'
+                mark = True
+                if p in already_sent:
+                    if already_sent[p]:
+                        mark = False
+                if mark:
+                    email_message += "- Failed EXCEPTION for: " + str(p) + '\r\n'
+                    already_sent[p] = True
 
     if email_message != '':
         email_error(email_message, already_sent)
@@ -55,12 +63,12 @@ def email_error(message, mark_sent):
     try:
         requests.post("https://api.mailgun.net/v3/mg.bcinnovationsonline.com/messages",
                       auth=("api", envs['MAILGUN_KEY']),
-                      data={"from": "BC Innovations <donotreply@mg.bcinnovationsonline.com>",
+                      data={"from": "BC Innovations <donotreply@bcinnovationsonline.com>",
                             "to": [envs['ALERT_EMAIL']],
                             "subject": "UpTime Alert",
                             "text": message})
 
-        with open('processed.json', 'w') as outfile:
+        with open('/home/nburfield/Development/uptime/processed.json', 'w') as outfile:
             json.dump(mark_sent, outfile)
 
     except:

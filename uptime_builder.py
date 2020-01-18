@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import urllib.request
 import base64
 import mmh3
@@ -11,11 +13,14 @@ def rebuild():
     with open('saved.json') as json_file:  
         data = json.load(json_file)
         for p in data:
-            with urllib.request.urlopen(p) as response:
-                html = response.read()
-                encoded = base64.b64encode(html)
-                hashed = mmh3.hash128(encoded, 42, signed = True)
-                new_data[p] = hashed
+            try:
+                with urllib.request.urlopen(p) as response:
+                    html = response.read()
+                    encoded = base64.b64encode(html)
+                    hashed = mmh3.hash128(encoded, 42, signed = True)
+                    new_data[p] = hashed
+            except:
+                print('Error in URL %s' % (p))
 
     ts = int(datetime.datetime.now().timestamp())
     os.rename("saved.json", "saved." + str(ts) + ".json")
